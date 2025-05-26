@@ -1,0 +1,27 @@
+# Archivos del sistema
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+
+# Archivos de usuario
+.env
+*.env
+
+# Configuración de IDE
+.vscode/
+.idea/
+
+# Git y otros
+.git
+.gitignore
+
+# Archivos temporales
+*.swp
+*.bak
+*.tmp
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
