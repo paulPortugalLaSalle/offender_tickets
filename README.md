@@ -1,4 +1,4 @@
-# Sistema de control de infracciones de trancito
+# Sistema de control de infracciones de transito
 
 Este es un pequeño sistema de control de infracciones
 
