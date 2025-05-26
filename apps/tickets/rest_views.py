@@ -11,6 +11,9 @@ from apps.tickets.serializers import TicketSerializer, TicketCreateSerializer
 
 logger = logging.getLogger('tickets')
 
+"""
+View Rest encargado de ver elas infracciones por policia
+"""
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_tickets(request,):
@@ -19,7 +22,9 @@ def list_tickets(request,):
         serializer = TicketSerializer(tickets, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
+"""
+View Rest encargado de hacer las consultas a las infracciones
+"""
 @api_view(['GET'])
 def list_ticket_filter(request):
     if request.query_params.get('vehicle_id'):
@@ -38,7 +43,9 @@ def list_ticket_filter(request):
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response({'Error': 'No puso ningun filtro'}, status=status.HTTP_204_NO_CONTENT)
 
-
+"""
+View Rest encargado de crear una infraccion.
+"""
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_ticket(request):
@@ -55,7 +62,9 @@ def create_ticket(request):
             logger.error(f'Error al crear infracción: {serializer.errors}')
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+"""
+View Rest encargado de ver el detalle, actualizar o borrar una infraccion.
+"""
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def get_ticket(request, pk=None):
