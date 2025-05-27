@@ -7,6 +7,7 @@ from rest_framework.response import Response
 
 from apps.tickets.models import Ticket
 from apps.tickets.serializers import TicketSerializer, TicketCreateSerializer
+from apps.tickets.apps import ticket_service
 
 
 logger = logging.getLogger('tickets')
@@ -52,7 +53,7 @@ def create_ticket(request):
     if request.method == 'POST':
         serializer = TicketCreateSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            ticket = serializer.save()
+            ticket = ticket_service.create(serializer.validated_data)
             logger.info(f'Infrancción creado por usuario {request.user.username} para vehículo {ticket.vehicle.identifier}')
             return Response(
                 TicketSerializer(ticket, many=False).data,
