@@ -19,7 +19,7 @@ DB_NAME=traffic_ticket_DB
 DB_USER=postgres
 DB_PASSWORD=plop123PLOP
 ```
-3. Crea un file llamado logs al mismo nivel del settings .proyecto
+3. Crea un file llamado logs al mismo nivel del settings.py
 
 4. Ejecutar el la imagen Docker con el siguien comando con 
 ```
