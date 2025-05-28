@@ -15,6 +15,7 @@ class TicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = (
+            'ticket_type',
             'vehicle',
             'offender',
             'amount',
@@ -35,6 +36,7 @@ class TicketCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = (
+            'ticket_type',
             'vehicle',
             'offender_ident',
             'offender_names',

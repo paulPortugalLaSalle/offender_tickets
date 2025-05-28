@@ -27,6 +27,8 @@ class CustomUserManager(BaseUserManager):
 
 class PoliceUser(AbstractUser):
     email = models.EmailField(unique=True)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
 
     objects = CustomUserManager()
 

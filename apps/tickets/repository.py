@@ -1,27 +1,31 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List
 
-from .domain import Ticket
-
-
-class TicketRepository(ABC):
-    @abstractmethod
-    def get_by_id(self, ticket_id: int) -> Optional[Ticket]:
-        pass
-
-    @abstractmethod
-    def list_by_offender(self, offender_id: str) -> List[Ticket]:
-        pass
-
-    @abstractmethod
-    def save(self, ticket: Ticket) -> Ticket:
-        pass
 
 
 # Implementación concreta usando Django ORM
 from apps.tickets.models import Ticket as TicketModel
-from apps.tickets.domain import Offender, Vehicle, Ticket as DomainTicket
-from datetime import datetime
+from apps.vehicles.models import Vehicle as VehicleModel
+from apps.accounts.models import PoliceUser, OffenderUser
+from .domain import (
+    Offender,
+    Vehicle,
+    Ticket as DomainTicket
+)
+
+
+class TicketRepository(ABC):
+    @abstractmethod
+    def get_by_id(self, ticket_id: int) -> Optional[DomainTicket]:
+        pass
+
+    @abstractmethod
+    def list_by_offender(self, offender_id: str) -> List[DomainTicket]:
+        pass
+
+    @abstractmethod
+    def save(self, ticket: DomainTicket) -> DomainTicket:
+        pass
 
 
 class DjangoORMTicketRepository(TicketRepository):
@@ -36,15 +40,25 @@ class DjangoORMTicketRepository(TicketRepository):
         queryset = TicketModel.objects.filter(offender__identifier=offender_id)
         return [self._to_domain(obj) for obj in queryset]
 
+    def list_by_vehicle(self, vehicle_id: str) -> List[DomainTicket]:
+        queryset = TicketModel.objects.filter(vehicle__identifier=vehicle_id)
+        return [self._to_domain(obj) for obj in queryset]
+
     def save(self, ticket: DomainTicket) -> DomainTicket:
+        vehicle, _ = VehicleModel.objects.update_or_create(identifier=ticket.vehicle.identifier)
+        offender, _ = OffenderUser.objects.update_or_create(
+            identifier=ticket.offender.identifier
+        )
+        police = PoliceUser.objects.get(id=ticket.created_by)
         obj, _ = TicketModel.objects.update_or_create(
             id=ticket.id,
             defaults={
-                'vehicle': ticket.vehicle.identifier,
-                'offender_id': ticket.offender.identifier,
+                'vehicle': vehicle,
+                'offender': offender,
                 'amount': ticket.amount,
+                'ticket_type': ticket.ticket_type,
                 'description': ticket.description,
-                'created_by': ticket.created_by,
+                'created_by': police
             }
         )
         return self._to_domain(obj)
@@ -52,10 +66,11 @@ class DjangoORMTicketRepository(TicketRepository):
     def _to_domain(self, obj: TicketModel) -> DomainTicket:
         return DomainTicket(
             id=obj.id,
+            ticket_type=obj.ticket_type,
             vehicle=Vehicle(identifier=obj.vehicle.identifier),
             offender=Offender(identifier=obj.offender.identifier, names=obj.offender.names),
             amount=obj.amount,
             description=obj.description,
             created_at=obj.created_date,
-            created_by=obj.created_by.username
+            created_by=obj.created_by.first_name + obj.created_by.last_name
         )

@@ -21,7 +21,7 @@ DB_PASSWORD=plop123PLOP
 ```
 3. Crea un file llamado logs al mismo nivel del settings.py
 
-4. Ejecutar el la imagen Docker con el siguien comando con 
+4. Ejecutar el la imagen Docker con el siguiente comando con 
 ```
 docker-compose up --build
 ```

@@ -6,8 +6,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.tickets.models import Ticket
+from apps.tickets.penalty_calculator import SimplePenaltyCalculator
+from apps.tickets.repository import DjangoORMTicketRepository
 from apps.tickets.serializers import TicketSerializer, TicketCreateSerializer
-from apps.tickets.apps import ticket_service
+
+from .services import TicketService
 
 
 logger = logging.getLogger('tickets')
@@ -44,6 +47,7 @@ def list_ticket_filter(request):
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response({'Error': 'No puso ningun filtro'}, status=status.HTTP_204_NO_CONTENT)
 
+
 """
 View Rest encargado de crear una infraccion.
 """
@@ -53,15 +57,29 @@ def create_ticket(request):
     if request.method == 'POST':
         serializer = TicketCreateSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            ticket = ticket_service.create(serializer.validated_data)
+            ticket_service = TicketService(
+                repo=DjangoORMTicketRepository(),
+                calculator=SimplePenaltyCalculator()
+            )
+            ticket = ticket_service.create_ticket(serializer.validated_data, user=request.user)
             logger.info(f'Infrancción creado por usuario {request.user.username} para vehículo {ticket.vehicle.identifier}')
             return Response(
-                TicketSerializer(ticket, many=False).data,
+                {
+                    'id': ticket.id,
+                    'ticket_type': ticket.ticket_type,
+                    'vehicle': {"identifier": ticket.vehicle.identifier},
+                    'offender': {"identifier": ticket.offender.identifier, "names": ticket.offender.names},
+                    'amount': ticket.amount,
+                    'description': ticket.description,
+                    'created_at': ticket.created_at,
+                    'created_by': ticket.created_by,
+                },
                 status=status.HTTP_201_CREATED
             )
         else:
             logger.error(f'Error al crear infracción: {serializer.errors}')
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 """
 View Rest encargado de ver el detalle, actualizar o borrar una infraccion.

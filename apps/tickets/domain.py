@@ -2,15 +2,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-@dataclass
-class Offender:
-    identifier: str
-    names: str
+from apps.accounts.domain import Offender
+from apps.vehicles.domain import Vehicle
 
-
-@dataclass
-class Vehicle:
-    identifier: str
 
 @dataclass
 class Ticket:
@@ -18,6 +12,7 @@ class Ticket:
     offender: Offender
     vehicle: Vehicle
     amount: float
+    ticket_type: str
     description: str
     created_at: datetime
     created_by: int
