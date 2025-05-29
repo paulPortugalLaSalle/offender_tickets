@@ -32,11 +32,36 @@ class TicketService:
         logger.info(f'Infrancción creado por usuario {user.username} para vehículo {ticket.vehicle.identifier}')
         return self.repo.save(ticket)
 
-    def filter_tickets(self, offender=None, vehicle=None):
+    def update_ticket(self, ticket: Ticket, validated_data, user):
+        ticket = Ticket(
+            id=ticket.id,
+            ticket_type=validated_data['ticket_type'],
+            vehicle=Vehicle(identifier=validated_data['vehicle']),
+            offender=Offender(validated_data['offender_ident'], validated_data['offender_names']),
+            amount=validated_data['amount'],
+            description=validated_data['description'],
+            created_at=datetime.now(),
+            created_by=user.id
+        )
+        logger.info(f'Infrancción con id {ticket.id} ha sido modificado')
+        return self.repo.save(ticket)
+
+    def filter_tickets(self, offender=None, vehicle=None, user=None):
         if offender:
             logger.info(f"Consulta de infracciones para por el infractor {offender}")
             return self.repo.list_by_offender(offender_id=offender)
         if vehicle:
-            logger.info(f"Consulta de infracciones para vehículo {Vehicle}")
+            logger.info(f"Consulta de infracciones para vehículo {vehicle}")
             return self.repo.list_by_vehicle(vehicle_id=vehicle)
+        if user:
+            logger.info(f"Consulta de infracciones del policia con correo{user.email}")
+            return self.repo.list_by_user(user=user.id)
         return []
+
+    def get_ticket(self,pk):
+        return self.repo.get_by_id(pk)
+
+    def delete_ticket(self, pk):
+        logging.info(f'Infrancción con id {pk} ha sido eliminado')
+        return self.repo.delete(pk)
+

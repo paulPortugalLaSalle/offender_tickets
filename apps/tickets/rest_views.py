@@ -27,9 +27,10 @@ View Rest encargado de ver elas infracciones por policia
 @permission_classes([IsAuthenticated])
 def list_tickets(request,):
     if request.method == 'GET':
-        tickets = Ticket.objects.filter(created_by=request.user)
+        tickets = ticket_service.filter_tickets(user=request.user)
         serializer = TicketSerializer(tickets, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    return None
 
 
 """
@@ -54,7 +55,7 @@ View Rest encargado de crear una infraccion.
 @permission_classes([IsAuthenticated])
 def create_ticket(request):
     if request.method == 'POST':
-        serializer = TicketCreateSerializer(data=request.data, context={'request': request})
+        serializer = TicketCreateSerializer(data=request.data)
         if serializer.is_valid():
             ticket = ticket_service.create_ticket(serializer.validated_data, user=request.user)
             return Response(
@@ -73,6 +74,7 @@ def create_ticket(request):
         else:
             logger.error(f'Error al crear infracción: {serializer.errors}')
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return None
 
 
 """
@@ -81,27 +83,28 @@ View Rest encargado de ver el detalle, actualizar o borrar una infraccion.
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def get_ticket(request, pk=None):
-    try:
-        ticket = Ticket.objects.get(id=pk)
-    except Ticket.DoesNotExist:
+    ticket = ticket_service.get_ticket(pk=pk)
+    if not ticket:
         logger.error(f'Error en la conulta de la infraccion')
         return Response({'error': 'No exiten estos datos de infraccion'}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        serializer = TicketSerializer(ticket, many=False)
+        serializer = TicketSerializer(ticket)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == 'PUT':
-        if ticket.created_by != request.user:
+        if ticket.created_by != request.user.id:
             return Response(
                 {'error': 'No tienes permiso para editar esta infraccion'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
-        serializer = TicketCreateSerializer(ticket, data=request.data, context={'request': request})
+        serializer = TicketCreateSerializer(ticket, data=request.data)
         if serializer.is_valid():
-            ticket = serializer.save()
-            logger.info(
-                f'Infrancción con id {ticket.id} ha sido modificado')
+            ticket = ticket_service.update_ticket(
+                ticket,
+                validated_data=request.data,
+                user=request.user
+            )
             return Response(
                 TicketSerializer(ticket, many=False).data,
                 status=status.HTTP_201_CREATED
@@ -109,11 +112,12 @@ def get_ticket(request, pk=None):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
-        if ticket.created_by != request.user:
+        if ticket.created_by != request.user.id:
             return Response(
                 {'error': 'No tienes permiso para eliminar esta infraccion'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
-        ticket.delete()
-        logger.info(f'Infrancción con id {ticket.id} ha sido eliminado')
+        ticket_service.delete_ticket(ticket.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    return None

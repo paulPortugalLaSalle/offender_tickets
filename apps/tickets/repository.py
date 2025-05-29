@@ -28,6 +28,14 @@ class TicketRepository(ABC):
         pass
 
     @abstractmethod
+    def list_by_user(self, user: int) -> List[DomainTicket]:
+        pass
+
+    @abstractmethod
+    def delete(self, ticked_id: int) -> None:
+        pass
+
+    @abstractmethod
     def save(self, ticket: DomainTicket) -> DomainTicket:
         pass
 
@@ -48,6 +56,10 @@ class DjangoORMTicketRepository(TicketRepository):
         queryset = TicketModel.objects.filter(vehicle__identifier=vehicle_id)
         return [self._to_domain(obj) for obj in queryset]
 
+    def list_by_user(self, user: int) -> List[DomainTicket]:
+        queryset = TicketModel.objects.filter(created_by_id=user)
+        return [self._to_domain(obj) for obj in queryset]
+
     def save(self, ticket: DomainTicket) -> DomainTicket:
         vehicle, _ = VehicleModel.objects.update_or_create(identifier=ticket.vehicle.identifier)
         offender, _ = OffenderUser.objects.update_or_create(
@@ -66,6 +78,15 @@ class DjangoORMTicketRepository(TicketRepository):
             }
         )
         return self._to_domain(obj)
+
+
+    def delete(self, ticked_id: int) -> None:
+        try:
+            obj = TicketModel.objects.get(id=ticked_id)
+            obj.delete()
+        except TicketModel.DoesNotExist:
+            pass
+
 
     def _to_domain(self, obj: TicketModel) -> DomainTicket:
         return DomainTicket(
