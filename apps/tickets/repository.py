@@ -24,6 +24,10 @@ class TicketRepository(ABC):
         pass
 
     @abstractmethod
+    def list_by_vehicle(self, vehicle_id: str) -> List[DomainTicket]:
+        pass
+
+    @abstractmethod
     def save(self, ticket: DomainTicket) -> DomainTicket:
         pass
 
@@ -72,5 +76,5 @@ class DjangoORMTicketRepository(TicketRepository):
             amount=obj.amount,
             description=obj.description,
             created_at=obj.created_date,
-            created_by=obj.created_by.first_name + obj.created_by.last_name
+            created_by=obj.created_by.id
         )

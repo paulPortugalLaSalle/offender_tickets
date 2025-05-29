@@ -22,7 +22,3 @@ class BaseModel(models.Model):
                 self.created_by = user
             self.created_by = user
         super().save(*args, **kwargs)
-
-    @property
-    def get_police_names(self):
-        return f"{self.created_by.first_name} {self.created_by.last_name}"

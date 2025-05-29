@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.accounts.models import OffenderUser
+from apps.accounts.models import OffenderUser, PoliceUser
 from apps.accounts.serializers import OffenderSerializer
 from apps.tickets.models import Ticket
 from apps.vehicles.models import Vehicle
@@ -25,7 +25,13 @@ class TicketSerializer(serializers.ModelSerializer):
         )
 
     def get_police_names(self, obj):
-        return obj.get_police_names
+        try:
+            police_obj = obj.created_by
+            if isinstance(police_obj, int):
+                obj.created_by = PoliceUser.objects.get(id=police_obj)
+            return f"{obj.created_by.first_name} {obj.created_by.last_name}"
+        except PoliceUser.DoesNotExist:
+            return None
 
 
 class TicketCreateSerializer(serializers.ModelSerializer):

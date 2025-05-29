@@ -13,7 +13,12 @@ from apps.tickets.serializers import TicketSerializer, TicketCreateSerializer
 from .services import TicketService
 
 
+ticket_service = TicketService(
+    repo=DjangoORMTicketRepository(),
+    calculator=SimplePenaltyCalculator()
+)
 logger = logging.getLogger('tickets')
+
 
 """
 View Rest encargado de ver elas infracciones por policia
@@ -26,26 +31,20 @@ def list_tickets(request,):
         serializer = TicketSerializer(tickets, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 """
 View Rest encargado de hacer las consultas a las infracciones
 """
 @api_view(['GET'])
 def list_ticket_filter(request):
-    if request.query_params.get('vehicle_id'):
-        tickets = Ticket.objects.filter(
-            vehicle__identifier=request.query_params.get('vehicle_id')
-        )
-        serializer = TicketSerializer(tickets, many=True)
-        logger.info(f"Consulta de infracciones para vehículo {request.query_params.get('vehicle_id')}")
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    if request.query_params.get('offender_id'):
-        tickets = Ticket.objects.filter(
-            offender__identifier=request.query_params.get('offender_id')
-        )
-        serializer = TicketSerializer(tickets, many=True)
-        logger.info(f"Consulta de infracciones para por el infractor {request.query_params.get('offender_id')}")
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response({'Error': 'No puso ningun filtro'}, status=status.HTTP_204_NO_CONTENT)
+    if not request.query_params:
+        return Response({'Error': 'Es necesario establecer filtros'}, status=status.HTTP_204_NO_CONTENT)
+    tickets = ticket_service.filter_tickets(
+        vehicle=request.query_params.get('vehicle_id'),
+        offender=request.query_params.get('offender_id'),
+    )
+    serializer = TicketSerializer(tickets, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 """
@@ -57,12 +56,7 @@ def create_ticket(request):
     if request.method == 'POST':
         serializer = TicketCreateSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            ticket_service = TicketService(
-                repo=DjangoORMTicketRepository(),
-                calculator=SimplePenaltyCalculator()
-            )
             ticket = ticket_service.create_ticket(serializer.validated_data, user=request.user)
-            logger.info(f'Infrancción creado por usuario {request.user.username} para vehículo {ticket.vehicle.identifier}')
             return Response(
                 {
                     'id': ticket.id,
@@ -87,7 +81,7 @@ View Rest encargado de ver el detalle, actualizar o borrar una infraccion.
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def get_ticket(request, pk=None):
-    try: 
+    try:
         ticket = Ticket.objects.get(id=pk)
     except Ticket.DoesNotExist:
         logger.error(f'Error en la conulta de la infraccion')
