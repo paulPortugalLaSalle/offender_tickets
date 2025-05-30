@@ -79,7 +79,7 @@ DATABASES = {
         'NAME': config('DB_USER'),
         'USER': config('DB_USER'),
         'PASSWORD': config('DB_PASSWORD'),
-        'HOST': 'db',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }

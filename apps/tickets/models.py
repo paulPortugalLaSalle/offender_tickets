@@ -2,19 +2,22 @@ import datetime
 
 from django.db import models
 
+from core.constants import (
+    TICKET_TYPE_LEVE,
+    TICKET_TYPE_MEDIA,
+    TICKET_TYPE_GRAVE,
+)
 from core.models import BaseModel
 from apps.accounts.models import OffenderUser
 from apps.vehicles.models import Vehicle
 
 
 class Ticket(BaseModel):
-    LEVE = "LEVE"
-    MEDIA = "MEDIA"
-    GRAVE = "GRAVE"
+
     TICKET_TYPE = (
-        ("LEVE", "leve"),
-        ("MEDIA", "media"),
-        ("GRAVE", "grave"),
+        (TICKET_TYPE_LEVE, "leve"),
+        (TICKET_TYPE_MEDIA, "media"),
+        (TICKET_TYPE_GRAVE, "grave"),
     )
 
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
@@ -34,7 +37,7 @@ class Ticket(BaseModel):
         max_length=8,
         verbose_name="tipo de ticket",
         choices=TICKET_TYPE,
-        default=LEVE
+        default=TICKET_TYPE_LEVE
     )
 
     def __str__(self):

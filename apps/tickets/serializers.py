@@ -1,3 +1,5 @@
+from symtable import Class
+
 from rest_framework import serializers
 
 from apps.accounts.models import OffenderUser, PoliceUser
@@ -15,6 +17,7 @@ class TicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = (
+            'id',
             'ticket_type',
             'vehicle',
             'offender',
@@ -34,7 +37,15 @@ class TicketSerializer(serializers.ModelSerializer):
             return None
 
 
-class TicketCreateSerializer(serializers.ModelSerializer):
+class TicketAfterCreateSerializer(TicketSerializer):
+    pass
+
+
+class TicketAfterUpdateSerializer(TicketSerializer):
+    pass
+
+
+class TicketInputSerializer(serializers.ModelSerializer):
     vehicle = serializers.CharField(max_length=16, write_only=True, required=True)
     offender_ident = serializers.CharField(max_length=16, write_only=True, required=True)
     offender_names = serializers.CharField(max_length=64, allow_null=True, required=False)
@@ -46,42 +57,15 @@ class TicketCreateSerializer(serializers.ModelSerializer):
             'vehicle',
             'offender_ident',
             'offender_names',
-            'amount',
             'description',
             'date',
         )
 
-    def get_request_fields(self, validated_data):
-        vehicle_plate = validated_data.pop('vehicle')
-        offender_ident = validated_data.pop('offender_ident')
-        offender_names = validated_data.pop('offender_names', '')
 
-        vehicle_obj, v_created = Vehicle.objects.get_or_create(identifier=vehicle_plate)
-        offender_obj, o_created = OffenderUser.objects.get_or_create(
-            identifier=offender_ident,
-            defaults={'names': offender_names}
-        )
-        return vehicle_obj, offender_obj
+class TicketCreateSerializer(TicketInputSerializer):
+    pass
 
-    def create(self, validated_data):
-        vehicle, offender = self.get_request_fields(validated_data)
-        ticket = Ticket.objects.create(
-            vehicle=vehicle,
-            offender=offender,
-            created_by=self.context['request'].user,
-            **validated_data
-        )
-        return ticket
 
-    def update(self, instance, validated_data):
-        offender_names = validated_data.get('offender_names')
-        vehicle, offender = self.get_request_fields(validated_data)
-        offender.names = offender_names
-        offender.save()
-        instance.vehicle = vehicle
-        instance.offender = offender
-        instance.created_by = self.context['request'].user
-        instance.amount = validated_data.get('amount')
-        instance.description = validated_data.get('description')
-        instance.save()
-        return instance
+class TicketUpdateSerializer(TicketInputSerializer):
+    class Meta(TicketInputSerializer.Meta):
+        fields = TicketInputSerializer.Meta.fields + ('amount',)
