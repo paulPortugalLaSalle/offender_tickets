@@ -23,7 +23,7 @@ class TicketSerializer(serializers.ModelSerializer):
             'offender',
             'amount',
             'description',
-            'date',
+            'created_date',
             'police_names'
         )
 
@@ -58,7 +58,7 @@ class TicketInputSerializer(serializers.ModelSerializer):
             'offender_ident',
             'offender_names',
             'description',
-            'date',
+            'created_date',
         )
 
 

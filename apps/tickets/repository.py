@@ -63,7 +63,8 @@ class DjangoORMTicketRepository(TicketRepository):
     def save(self, ticket: DomainTicket) -> DomainTicket:
         vehicle, _ = VehicleModel.objects.update_or_create(identifier=ticket.vehicle.identifier)
         offender, _ = OffenderUser.objects.update_or_create(
-            identifier=ticket.offender.identifier
+            identifier=ticket.offender.identifier,
+            defaults={'names': ticket.offender.names}
         )
         police = PoliceUser.objects.get(id=ticket.created_by)
         obj, _ = TicketModel.objects.update_or_create(
@@ -96,6 +97,6 @@ class DjangoORMTicketRepository(TicketRepository):
             offender=Offender(identifier=obj.offender.identifier, names=obj.offender.names),
             amount=obj.amount,
             description=obj.description,
-            created_at=obj.created_date,
-            created_by=obj.created_by.id
+            created_date=obj.created_date,
+            created_by=obj.created_by.id,
         )

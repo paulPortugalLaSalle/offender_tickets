@@ -129,3 +129,7 @@ Para ejecutar los test es necesario que la imagen docker este corriendo
 ```bash
   docker-compose exec web python manage.py test tests.tickets.test_tickets_crud
 ```
+4. Test services de Infracciones
+```bash
+  docker-compose exec web python manage.py test tests.tickets.test_services
+```

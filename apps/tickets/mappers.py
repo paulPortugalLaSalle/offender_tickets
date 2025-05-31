@@ -16,6 +16,6 @@ def make_ticket_from_validated(validated_data, user, amount, ticket_id=None) -> 
         ),
         amount=amount,
         description=validated_data['description'],
-        created_at=datetime.now(),
+        created_date=datetime.now(),
         created_by=user.id
     )

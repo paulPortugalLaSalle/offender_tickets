@@ -93,3 +93,5 @@ Esto permite desplegar el sistema completo en minutos, sin depender del entorno 
 - La estructura está preparada para escalar con nuevos modelos (por ejemplo, historial de pagos, tipos de infracción).
 - Todos los cambios críticos en vistas son registrados por el logger personalizado para facilitar la trazabilidad.
 - Algunos Modelos estan enteramente con los datos necesarios para uso practico del ejercicio, estos se pueden mejorar u optimizar.
+- Ejemplo el usuario Infractor no le he creado un validador debido a que por propositos del ejemplo este solo consultaria sus multas segun su identificador, Pero de igual manera s epodria extender su comportamiento del abstract User e implementar su propio autenticador.
+- Tampoco he asignado un vehiculo al infractor ya que una infraccion puede ser registrada a un vehiculo siendo manejado por un infractor el cual no es necesariamente su dueño.

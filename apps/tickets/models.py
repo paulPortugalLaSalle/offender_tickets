@@ -32,7 +32,6 @@ class Ticket(BaseModel):
         blank=True,
         verbose_name="descripcion"
     )
-    date = models.DateField(default=datetime.date.today, verbose_name="fecha")
     ticket_type = models.CharField(
         max_length=8,
         verbose_name="tipo de ticket",

@@ -14,7 +14,7 @@ class Ticket:
     amount: float
     ticket_type: str
     description: str
-    created_at: datetime
+    created_date: datetime
     created_by: int
 
     # consulta si el infractor tiene mas de una infraccion

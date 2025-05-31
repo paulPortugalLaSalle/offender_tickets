@@ -5,6 +5,7 @@ from rest_framework.test import APITestCase
 from apps.accounts.models import PoliceUser, OffenderUser
 from apps.tickets.models import Ticket
 from apps.vehicles.models import Vehicle
+from core.constants import TICKET_TYPE_LEVE
 
 
 class ListTickets(APITestCase):
@@ -31,6 +32,7 @@ class ListTickets(APITestCase):
             "vehicle": "placa1",
             "offender_ident": "70185023",
             "offender_names": "paul portugal ofender",
+            "ticket_type": TICKET_TYPE_LEVE,
             "amount": 10.45,
             "description": "Infracción leve"
         }
@@ -52,7 +54,7 @@ class ListTickets(APITestCase):
         )
         self.ticket.save()
 
-    def test_success_create_ticket(self):
+    def test_success_create_minor_ticket(self):
         response = self.client.post(
             self.add_ticket_url,
             self.ticket_data,
@@ -62,9 +64,9 @@ class ListTickets(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['vehicle']['identifier'], 'placa1')
         self.assertEqual(response.data['offender']['identifier'], '70185023')
-        self.assertEqual(response.data['amount'], 10.45)
-        self.assertEqual(response.data['police_names'], 'paul portugal herencia' )
-        self.assertIsNotNone(response.data['date'])
+        self.assertEqual(response.data['amount'], 150)
+        self.assertEqual(response.data['police_names'], 'paul portugal herencia')
+        self.assertIsNotNone(response.data['created_date'])
 
     def test_get_ticket_detail(self):
         response = self.client.get(
@@ -76,7 +78,7 @@ class ListTickets(APITestCase):
         self.assertEqual(response.data['offender']['identifier'], 'offender1')
         self.assertEqual(response.data['amount'], 100.22)
         self.assertEqual(response.data['police_names'], 'paul portugal herencia')
-        self.assertIsNotNone(response.data['date'])
+        self.assertIsNotNone(response.data['created_date'])
 
     def test_success_update_ticket(self):
         response = self.client.put(
@@ -90,7 +92,7 @@ class ListTickets(APITestCase):
         self.assertEqual(response.data['offender']['identifier'], '70185023')
         self.assertEqual(response.data['amount'], 10.45)
         self.assertEqual(response.data['police_names'], 'paul portugal herencia')
-        self.assertIsNotNone(response.data['date'])
+        self.assertIsNotNone(response.data['created_date'])
 
     def test_success_delete_ticket(self):
         response = self.client.delete(
